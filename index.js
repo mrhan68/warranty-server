@@ -10,6 +10,9 @@ const upload = multer({ dest: "uploads/" }); // Lưu file upload vào thư mục
 app.use(cors());
 app.use(express.json());
 
+// Cho phép truy cập file tĩnh trong thư mục uploads
+app.use('/uploads', express.static('uploads'));
+
 // Nhận dữ liệu dạng form-data (có file)
 app.post("/api/warranty-register", upload.any(), async (req, res) => {
   // Thông tin text
@@ -54,6 +57,19 @@ app.post("/api/warranty-register", upload.any(), async (req, res) => {
   }
 
   res.json({ success: true, message: "Đã nhận bản tin bảo hành!" });
+});
+
+// Thêm vào index.js trên server
+app.get("/api/warranty-list", (req, res) => {
+  const fs = require("fs");
+  try {
+    const data = fs.readFileSync("warranty-registers.json", "utf8");
+    // Mỗi bản ghi là 1 dòng, chuyển thành mảng object
+    const lines = data.trim().split("\n").map(line => JSON.parse(line));
+    res.json(lines);
+  } catch (err) {
+    res.status(500).json({ error: "Không đọc được file!" });
+  }
 });
 
 // Start server
